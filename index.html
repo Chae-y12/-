@@ -1,0 +1,124 @@
+# 패션 트렌드 기반 코디 추천 시스템 (Colab 확장 버전)
+# 체형, 성별 기반 + 이미지 시각화 포함
+
+from datetime import datetime
+from typing import List, Dict
+from IPython.display import Image, display
+import random
+
+# -----------------------------
+# 트렌드 키워드 확장
+# -----------------------------
+trend_pool = [
+    "라벤더", "Y2K", "스트릿웨어", "에코패션", "데님", "올리브그린", "클래식", "플로럴",
+    "시스루", "크롭탑", "실키 셔츠", "롱스커트", "카고팬츠", "오버사이즈 재킷", "레더 아이템",
+    "코어 코지", "테크웨어", "시티보이룩", "매트릭스룩", "아카데미룩", "뉴트럴톤", "메탈릭",
+    "복고풍", "민소매 셋업", "벨트 포인트", "레이어드 니트", "하프 집업", "바이커 쇼츠",
+    "플리츠", "퍼프소매", "크링클 소재", "백리스", "스포티 믹스", "버뮤다팬츠"
+]
+
+# -----------------------------
+# 트렌드 키워드 → 이미지 매핑
+# -----------------------------
+trend_image_map = {
+    "라벤더": "https://raw.githubusercontent.com/angeloyeo/fashion-ai-demo/main/img/lavender_여성.jpg",
+    "Y2K": "https://raw.githubusercontent.com/angeloyeo/fashion-ai-demo/main/img/y2k_여성.jpg",
+    "스트릿웨어": "https://raw.githubusercontent.com/angeloyeo/fashion-ai-demo/main/img/street_여성.jpg",
+    "에코패션": "https://raw.githubusercontent.com/angeloyeo/fashion-ai-demo/main/img/eco_여성.jpg",
+    "데님": "https://i.pinimg.com/originals/5d/20/77/5d2077c6e6fa489db4aa98e1ef9827d5.jpg",
+    "오버사이즈 재킷": "https://i.pinimg.com/originals/f9/cc/4e/f9cc4e40b3e9ff8b65aa6e3d9c4a6d17.jpg",
+    "시스루": "https://img.hankyung.com/photo/202304/01.33130631.1.jpg",
+    "크롭탑": "https://images.unsplash.com/photo-1618354691278-faa89ff3dfaa",
+    "롱스커트": "https://img.musinsa.com/images/cate/202303/longskirt.jpg",
+    "카고팬츠": "https://i.pinimg.com/originals/5b/c9/70/5bc970f0bc0c9f67be18d156ad2708c6.jpg",
+    "코어 코지": "https://i.pinimg.com/originals/56/47/2b/56472b58020b2a04c41d1ef18c536f6d.jpg",
+    "메탈릭": "https://www.vogue.co.kr/wp-content/uploads/2023/10/style_6524fce70e037-790x1024.jpg",
+    "복고풍": "https://cdn.imweb.me/upload/S202208023292e9d9dc224/f07108fa3c302ff628f6d880b2f2ef94.jpg",
+    "시티보이룩": "https://i.pinimg.com/736x/23/63/e5/2363e5d0cb7fa4e7b8aaed0c48a3cb92.jpg",
+    "테크웨어": "https://cdn.shopify.com/s/files/1/0027/6847/3474/files/techwear-style-guide.jpg"
+}
+
+# -----------------------------
+# 사용자 정보 클래스
+# -----------------------------
+class UserProfile:
+    def __init__(self, style: str, season: str, color: str,
+                 height: int, weight: int, gender: str):
+        self.style = style
+        self.season = season
+        self.color = color
+        self.height = height
+        self.weight = weight
+        self.gender = gender
+
+    def __repr__(self):
+        return (f"[사용자] 성별: {self.gender}, 키: {self.height}cm, 몸무게: {self.weight}kg, "
+                f"스타일: {self.style}, 계절: {self.season}, 색상: {self.color}")
+
+# -----------------------------
+# 트렌드 키워드 선택
+# -----------------------------
+def get_today_trend_keywords() -> List[str]:
+    return random.sample(trend_pool, 3)
+
+# -----------------------------
+# 트렌드 이미지 URL 반환
+# -----------------------------
+def get_image_url(keyword: str, gender: str) -> str:
+    return trend_image_map.get(keyword, "https://raw.githubusercontent.com/angeloyeo/fashion-ai-demo/main/img/default_여성.jpg")
+
+# -----------------------------
+# 추천 생성 함수
+# -----------------------------
+def recommend_outfit(user: UserProfile, trend_keywords: List[str]) -> Dict:
+    top = f"{trend_keywords[0]} 스타일 {user.color} 블라우스"
+
+    # 체형 기반 하의 추천
+    if user.height < 160:
+        bottom = "미디 기장의 플레어 스커트"
+    elif user.height > 175:
+        bottom = "롱 부츠컷 데님 팬츠"
+    else:
+        bottom = "기본 핏 슬랙스"
+
+    # 체중 기반 악세서리 추천
+    if user.weight >= 80:
+        accessory = "오버사이즈 숄더백"
+    else:
+        accessory = "미니 크로스백"
+
+    image_url = get_image_url(trend_keywords[0], user.gender)
+
+    return {
+        "top": top,
+        "bottom": bottom,
+        "accessory": accessory,
+        "image_url": image_url,
+        "trend_keywords": trend_keywords,
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+
+# -----------------------------
+# 실행 함수
+# -----------------------------
+def run_demo():
+    user = UserProfile(style="스트릿", season="봄", color="라벤더", height=158, weight=50, gender="여성")
+    trend_keywords = get_today_trend_keywords()
+    outfit = recommend_outfit(user, trend_keywords)
+
+    print("✅ 사용자 정보:")
+    print(user)
+    print("\n📌 추천 코디:")
+    print(f"  Top        : {outfit['top']}")
+    print(f"  Bottom     : {outfit['bottom']}")
+    print(f"  Accessory  : {outfit['accessory']}")
+    print(f"  Trend Tags : {', '.join(outfit['trend_keywords'])}")
+    print(f"  Timestamp  : {outfit['timestamp']}")
+
+    print("\n🖼️ 추천 이미지:")
+    display(Image(url=outfit["image_url"]))
+
+# -----------------------------
+# 실행
+# -----------------------------
+run_demo()
